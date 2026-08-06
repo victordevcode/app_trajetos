@@ -1,0 +1,50 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Tabela de Locais/Destinos cadastrados previamente
+model Location {
+  id          String   @id @default(uuid())
+  name        String   // Ex: "Depósito Central", "Cliente João Silva"
+  address     String   // Endereço completo digitado pelo usuário
+  latitude    Float    // Latitude obtida via geocodificação
+  longitude   Float    // Longitude obtida via geocodificação
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  routePoints RoutePoint[]
+
+  @@map("locations")
+}
+
+// Tabela de Rotas Criadas
+model Route {
+  id          String       @id @default(uuid())
+  title       String       // Ex: "Rota de Entregas - Zona Sul"
+  totalKm     Float?       // Distância total calculada
+  totalTimeMin Float?      // Tempo estimado total em minutos
+  createdAt   DateTime     @default(now())
+
+  points      RoutePoint[]
+
+  @@map("routes")
+}
+
+// Tabela intermediária de pontos da rota (com a ordem do trajeto)
+model RoutePoint {
+  id          String   @id @default(uuid())
+  routeId     String
+  locationId  String
+  order       Int      // Posição no trajeto (0 = Origem, 1 = Primeira parada...)
+  visited     Boolean  @default(false)
+
+  route       Route    @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  location    Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@map("route_points")
+}

@@ -1,0 +1,75 @@
+import express from 'express';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+const app = express();
+const port = 3000;
+
+app.use(express.json());
+
+// Rota inicial / teste
+app.get('/', (req, res) => {
+  res.send('Hello World!');
+});
+
+// Rota para Pontos de Parada
+app.post('/pontos', async (req, res) => {
+  const { trajetoId, nome_ponto, latitude, longitude } = req.body;
+  
+  try {
+    const novoPonto = await prisma.pontos_parada.create({
+      data: {
+        trajetoId,
+        nome_ponto,
+        latitude,
+        longitude
+      }
+    });
+    res.status(201).json(novoPonto);
+  } catch (error) {
+    res.status(400).json({ error: 'Não foi possível criar o ponto de parada' });
+  }
+});
+
+// Rota para Trajetos
+app.post('/trajetos', async (req, res) => {
+  const { nome_rota, origem, destino, distancia_estimada, duracao } = req.body;
+  
+  try {
+    const novoTrajeto = await prisma.trajetos.create({
+      data: {
+        nome_rota,
+        origem,
+        destino,
+        distancia_estimada,
+        duracao
+      }
+    });
+    res.status(201).json(novoTrajeto);
+  } catch (error) {
+    res.status(400).json({ error: 'Não foi possível criar o trajeto' });
+  }
+});
+
+// Rota para Usuários
+app.post('/usuarios', async (req, res) => {
+  const { nome, email, senha } = req.body;
+  
+  try {
+    const novoUsuario = await prisma.usuarios.create({
+      data: {
+        nome,
+        email,
+        senha
+      }
+    });
+    res.status(201).json(novoUsuario);
+  } catch (error) {
+    res.status(400).json({ error: 'Não foi possível cadastrar o usuário' });
+  }
+});
+
+// Inicialização do Servidor (SEMPRE NO FINAL)
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
